@@ -3,6 +3,7 @@ import socket
 from socket_handler import SocketHandler
 import sys
 import app
+import re
 def main():
     with socket.socket(socket.AF_INET,socket.SOCK_STREAM) as sock:
         sock.connect(("localhost",1337))
@@ -57,7 +58,7 @@ def run_app_connection(host : str, port : int) -> None:
             pass
         while main_loop(handler):
             pass
-    
+
 def main_loop(handler : SocketHandler) -> bool:
 
     command = input("Enter command for server")
@@ -83,7 +84,9 @@ def main_loop(handler : SocketHandler) -> bool:
     return True
     
 def validate_command(command : str) -> bool:
-    return True
+    pattern = r'calculate:\s-?\d+\s[+\-*/]\s-?\d+$|^factors:\s\d+$|^max:\s\(-?\d+(\s-?\d+)*\)$'
+    return bool(re.match(pattern,command))
+
 def authentication(handler : SocketHandler) -> bool:
     username_input = input()
     password_input = input()
