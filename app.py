@@ -91,15 +91,15 @@ def process_command(message : str) -> tuple[NextAction, bytes | None]:
     elif message.startswith(FACTORS_COMMAND):
         return factors(message[len(FACTORS_COMMAND):])
     else:
-        return NextAction.QUIT, None
+        return NextAction.SEND, "Invalid command.".encode()
     
 def factors(arg : str):
     try:
         x = int(arg)
     except:
-        return NextAction.QUIT, None
+        return NextAction.SEND, "Invalid format for factor.".encode()
     if x < 2:
-        return NextAction.QUIT, None
+        return NextAction.SEND, "Invalid number for factor.".encode()
     x_factors = set()
     y = 2
     while x > 1:
@@ -118,7 +118,7 @@ def get_max(args : list[str]) -> tuple[NextAction, bytes | None]:
     try:
         return NextAction.SEND, f"the maximum is {max([int(s) for s in args])}.".encode()
     except:
-        return NextAction.QUIT, None 
+        return NextAction.SEND, "Invalid value in max.".encode() 
 def calculate(args : list[str]) -> tuple[NextAction, bytes | None]:
     try:
         x = int(args[0])
@@ -138,10 +138,10 @@ def calculate(args : list[str]) -> tuple[NextAction, bytes | None]:
                 return NextAction.SEND, f"error: result is too big.".encode()
             return NextAction.SEND, f"response: {z:.2f}.".encode()
         else:
-            return NextAction.SEND, "Invalid calculate command."
+            return NextAction.SEND, "Invalid calculate command.".encode()
         if z > 2**31 - 1 or z < -2**31:
             return NextAction.SEND, f"error: result is too big.".encode()
         return NextAction.SEND, f"response: {z}.".encode()
     except:
-        return NextAction.QUIT, None
+        return NextAction.SEND, "Invalid value in calculate.".encode()
     
