@@ -10,9 +10,6 @@ def decode_header(header : bytes) -> int :
     length, = struct.unpack(HEADER_FORMAT, header)
     return length
 
-def encode_message(msg : bytes) -> bytes:
-    return encode_header(len(msg))+ msg
-
 def decode_message(encoded_msg : bytes) -> bytes:
     length = decode_header(encoded_msg[:HEADER_LEN])
     return encoded_msg[HEADER_LEN:length]

@@ -22,6 +22,10 @@ MAX_COMMAND = "max: "
 FACTORS_COMMAND = "factors: "
 QUIT_COMMAND = "quit"
 
+FAILED_LOGIN_RESPONSE = "Failed to login."
+LOGIN_SUCCESS_RESPONSE_TEMPLATE = "Hi {}, good to see you."
+def login_success_template(username : str) -> str:
+    return LOGIN_SUCCESS_RESPONSE_TEMPLATE.format(username)
 class AppInstance:
     def __init__(self, auth_dict : dict[str,str]) -> None:
         self._auth_dict = auth_dict
@@ -133,7 +137,10 @@ def calculate(args : list[str]) -> tuple[NextAction, bytes | None]:
         elif op == "^":
             z = x ** y
         elif op == "/":
-            z = x / y
+            try:
+                z = x / y
+            except ZeroDivisionError:
+                return NextAction.SEND, f"error: division by zero.".encode()
             if z > 2**31 - 1 or z < -2**31:
                 return NextAction.SEND, f"error: result is too big.".encode()
             return NextAction.SEND, f"response: {z:.2f}.".encode()
