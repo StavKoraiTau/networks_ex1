@@ -15,7 +15,8 @@ def main():
             elif cmd == "w":
                 msg = input()
                 handler.set_write(msg.encode())
-                handler.write()
+                while handler.writing():
+                    handler.write()
                 if msg == "quit":
                     break
     

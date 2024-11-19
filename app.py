@@ -116,7 +116,7 @@ def factors(arg : str):
         
 def get_max(args : list[str]) -> tuple[NextAction, bytes | None]:
     try:
-        return NextAction.SEND, f"the maximum is {max([int(s) for s in args])}."
+        return NextAction.SEND, f"the maximum is {max([int(s) for s in args])}.".encode()
     except:
         return NextAction.QUIT, None 
 def calculate(args : list[str]) -> tuple[NextAction, bytes | None]:
