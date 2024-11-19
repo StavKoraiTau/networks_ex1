@@ -138,7 +138,7 @@ def calculate(args : list[str]) -> tuple[NextAction, bytes | None]:
                 return NextAction.SEND, f"error: result is too big.".encode()
             return NextAction.SEND, f"response: {z:.2f}.".encode()
         else:
-            return NextAction.QUIT, None
+            return NextAction.SEND, "Invalid calculate command."
         if z > 2**31 - 1 or z < -2**31:
             return NextAction.SEND, f"error: result is too big.".encode()
         return NextAction.SEND, f"response: {z}.".encode()
