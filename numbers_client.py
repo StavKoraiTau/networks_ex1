@@ -4,24 +4,24 @@ from socket_handler import SocketHandler
 import sys
 import app
 import re
-def main():
-    with socket.socket(socket.AF_INET,socket.SOCK_STREAM) as sock:
-        sock.connect(("localhost",1337))
-        handler = SocketHandler(sock)
-        while True:
-            cmd = input()
-            if cmd == "r":
-                handler.set_read()
-                while handler.reading():
-                    handler.read()
-                print(handler.get_msg().decode())
-            elif cmd == "w":
-                msg = input()
-                handler.set_write(msg.encode())
-                while handler.writing():
-                    handler.write()
-                if msg == "quit":
-                    break
+# def main():
+#     with socket.socket(socket.AF_INET,socket.SOCK_STREAM) as sock:
+#         sock.connect(("localhost",1337))
+#         handler = SocketHandler(sock)
+#         while True:
+#             cmd = input()
+#             if cmd == "r":
+#                 handler.set_read()
+#                 while handler.reading():
+#                     handler.read()
+#                 print(handler.get_msg().decode())
+#             elif cmd == "w":
+#                 msg = input()
+#                 handler.set_write(msg.encode())
+#                 while handler.writing():
+#                     handler.write()
+#                 if msg == "quit":
+#                     break
     
 
 def main2():
@@ -38,7 +38,7 @@ def main2():
         except:
             print("Invalid port number")
     run_app_connection(host, port)
-
+    
 
 def run_app_connection(host : str, port : int) -> None:
     with socket.socket(socket.AF_INET,socket.SOCK_STREAM) as sock:
@@ -52,8 +52,9 @@ def run_app_connection(host : str, port : int) -> None:
         while handler.reading():
             handler.read()
         print(handler.get_msg().decode())
+        
         authentication_template = "User: <username>\nPassword: <password>"
-        print(f"Enter username and password in the format \n {authentication_template}")
+        print(f"Enter username and password in the format\n{authentication_template}")
         while not authentication(handler):
             pass
         while main_loop(handler):
@@ -63,8 +64,9 @@ def main_loop(handler : SocketHandler) -> bool:
 
     command = input("Enter command for server")
     if not validate_command(command):
-        print("Invalid command format")
-        command = "quit"
+        if command != "quit":
+            print("Invalid command format")
+            command = "quit"
     handler.set_write(command.encode())
     try:
         while handler.writing():
@@ -84,12 +86,30 @@ def main_loop(handler : SocketHandler) -> bool:
     return True
     
 def validate_command(command : str) -> bool:
-    pattern = r'calculate:\s-?\d+\s[+\-*/]\s-?\d+$|^factors:\s\d+$|^max:\s\(-?\d+(\s-?\d+)*\)$'
+    pattern = r'calculate:\s-?\d+\s[+\-*/^]\s-?\d+$|^factors:\s\d+$|^max:\s\(-?\d+(\s-?\d+)*\)$'
     return bool(re.match(pattern,command))
 
 def authentication(handler : SocketHandler) -> bool:
+    
     username_input = input()
+    
+    if username_input == "quit":
+        exit(0)
+        
+    if not username_input.startswith("User: "):
+        print("Invalid Login Format. Remember your username prefix 'User: <username>'.")
+        exit(0)
+        
     password_input = input()
+    
+    if password_input == "quit":
+        exit(0)
+        
+    if not password_input.startswith("Password: "):
+        print("Invalid Login Format. Remember your password prefix 'Password: <password>'.")
+        exit(0)
+        
+    
     handler.set_write(username_input.encode())
     try:
         while handler.writing():
@@ -100,13 +120,14 @@ def authentication(handler : SocketHandler) -> bool:
     except OSError:
         print("Error writing to server")
     try:
-
         handler.set_read()
         while handler.reading():
             handler.read()
         response = handler.get_msg().decode()
         username = username_input[len(app.USERNAME_COMMAND):]
-        print(response)
+        
+        print(response) # Welcome message.
+        
         if app.login_success_template(username) == response:
             return True
         else:
@@ -117,3 +138,4 @@ def authentication(handler : SocketHandler) -> bool:
 
 if __name__ == "__main__":
     main2()
+    
