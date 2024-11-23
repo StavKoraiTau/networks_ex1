@@ -30,6 +30,13 @@ def main():
 
                 
 def server_loop(auth_db : dict[str,str], port : int) -> None:
+    """startup listening, accepting clients and managing the communication between the app
+    instances and the sockets
+
+    Args:
+        auth_db (dict[str,str]): a dictionary of usernames:passwords
+        port (int): 
+    """
     with socket.socket(socket.AF_INET,socket.SOCK_STREAM) as listen_sock:
         listen_sock.bind(("",port))
         
@@ -74,7 +81,7 @@ def server_loop(auth_db : dict[str,str], port : int) -> None:
                     next_action(apps,handler,app_inst)
                     
 def next_action(apps : dict, handler : socket_handler.SocketHandler,
-            app_inst : app.ServerAppInstance, message : bytes | None = None):
+            app_inst : app.ServerAppInstance, message : bytes | None = None) -> None:
     next_act, opt_msg = app_inst.next(message)
     if next_act == NextAction.QUIT:
         apps.pop(handler.get_socket())

@@ -33,7 +33,7 @@ def run_app_connection(host : str, port : int) -> None:
             print(recvall(handler).decode())
             
             if not auth_loop(handler):
-                return
+                return #quit or wrong command format
             
             main_loop(handler)
 
@@ -45,13 +45,22 @@ def run_app_connection(host : str, port : int) -> None:
         
 
 def main_loop(handler : SocketHandler) -> bool:
+    """main loop in the app on the clientside, gets command from user,
+    if an invalid command or quit is passed sends a quit command to server and finishes when on the
+    latter it also prints an error, otherwise command is sent to server and prints response
+
+    Args:
+        handler (SocketHandler): _description_
+
+    Returns:
+        bool: _description_
+    """
     while True:
         command = input()
         
         if not validate_command(command):
-            if command != "quit":
-                print("Invalid command format")
-                command = "quit"
+            print("Invalid command format")
+            command = "quit"
                 
         sendall(handler, command.encode())
         
@@ -61,10 +70,27 @@ def main_loop(handler : SocketHandler) -> bool:
         print(recvall(handler).decode())
     
 def validate_command(command : str) -> bool:
-    pattern = r'(calculate:\s-?\d+\s[+\-*/^]\s-?\d+|^factors:\s-?\d+|^max:\s\(-?\d+(\s-?\d+)*\))$'
+    """validates on the clientside wether a command is valid
+
+    Args:
+        command (str): command entered by the user
+
+    Returns:
+        bool: True if a valid command during the main app loop
+    """
+    pattern = r'(calculate:\s-?\d+\s[+\-*/^]\s-?\d+|^factors:\s-?\d+|^max:\s\(-?\d+(\s-?\d+)*\)|quit)$'
     return bool(re.match(pattern,command))
 
 def auth_loop(handler: SocketHandler) -> bool:
+    """loop getting username and password command from user until correct login
+    info is entered (with the right format) or wrong format or "quit" is entered
+
+    Args:
+        handler (SocketHandler): SocketHandler connected to server
+
+    Returns:
+        bool: returns False if invalid command entered and True if authenticated succesfully
+    """
     while True:
         username_input = input()
     
