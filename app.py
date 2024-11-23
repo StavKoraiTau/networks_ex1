@@ -24,9 +24,11 @@ QUIT_COMMAND = "quit"
 
 FAILED_LOGIN_RESPONSE = "Failed to login."
 LOGIN_SUCCESS_RESPONSE_TEMPLATE = "Hi {}, good to see you."
+
 def login_success_template(username : str) -> str:
     return LOGIN_SUCCESS_RESPONSE_TEMPLATE.format(username)
-class AppInstance:
+
+class ServerAppInstance:
     def __init__(self, auth_dict : dict[str,str]) -> None:
         self._auth_dict = auth_dict
         self._username = ""
@@ -35,7 +37,6 @@ class AppInstance:
         
     def next(self,message : bytes | None = None) -> tuple[NextAction, bytes | None]:
         if message != None:
-            print(message)
             message = message.decode()
         if self._state == State.INIT:
             self._state = State.W_WELCOME
@@ -91,9 +92,12 @@ def process_command(message : str) -> tuple[NextAction, bytes | None]:
     if message.startswith(CALCULATE_COMMAND):
         return calculate(message[len(CALCULATE_COMMAND):].split(" "))
     elif message.startswith(MAX_COMMAND):
-        return get_max(message[len(MAX_COMMAND)+1:len(message)-1].split(" "))
+        #return get_max(message[len(MAX_COMMAND)+1:len(message)-1].split(" "))
+        return get_max(message[len(MAX_COMMAND):])
     elif message.startswith(FACTORS_COMMAND):
         return factors(message[len(FACTORS_COMMAND):])
+    elif message == QUIT_COMMAND:
+        return NextAction.QUIT, None
     else:
         return NextAction.SEND, "Invalid command.".encode()
     
@@ -118,12 +122,18 @@ def factors(arg : str):
         s += str(factor) + ","
     return NextAction.SEND, s[:len(s)-1].encode()
         
-def get_max(args : list[str]) -> tuple[NextAction, bytes | None]:
+def get_max(args : str) -> tuple[NextAction, bytes | None]:
+    if len(args) < 3 or args[0] != "(" or args[len(args)-1] != ")":
+        return NextAction.SEND, "Invalid format for max.".encode() 
+    args = args[1:len(args)-1].split(" ")
     try:
         return NextAction.SEND, f"the maximum is {max([int(s) for s in args])}.".encode()
     except:
         return NextAction.SEND, "Invalid value in max.".encode() 
+    
 def calculate(args : list[str]) -> tuple[NextAction, bytes | None]:
+    if len(args) != 3:
+        return NextAction.SEND, "Invalid number of args in calculate.".encode()
     try:
         x = int(args[0])
         op = args[1]

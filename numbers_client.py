@@ -4,12 +4,11 @@ from socket_handler import SocketHandler
 import sys
 import app
 import re
-    
 
 def main():
     host = "localhost"
     port = 1337
-    if len(sys.argv) > 3:
+    if len(sys.argv) != 3 and len(sys.argv) != 1:
         print("Invalid number of arguments, expected ./numbers_client.py [hostname [port]]")
         return
     if len(sys.argv) >= 2:
@@ -40,6 +39,8 @@ def run_app_connection(host : str, port : int) -> None:
 
         except OSError:
             print("Error with connection to server.")
+        except BrokenPipeError:
+            print("Error with connection to server.")
             
         
 
@@ -52,7 +53,7 @@ def main_loop(handler : SocketHandler) -> bool:
                 print("Invalid command format")
                 command = "quit"
                 
-        sendall(command.encode())
+        sendall(handler, command.encode())
         
         if command == "quit":
             return
@@ -60,34 +61,36 @@ def main_loop(handler : SocketHandler) -> bool:
         print(recvall(handler).decode())
     
 def validate_command(command : str) -> bool:
-    pattern = r'calculate:\s-?\d+\s[+\-*/^]\s-?\d+$|^factors:\s\d+$|^max:\s\(-?\d+(\s-?\d+)*\)$'
+    pattern = r'(calculate:\s-?\d+\s[+\-*/^]\s-?\d+|^factors:\s-?\d+|^max:\s\(-?\d+(\s-?\d+)*\))$'
     return bool(re.match(pattern,command))
 
 def auth_loop(handler: SocketHandler) -> bool:
     while True:
         username_input = input()
     
-        if username_input == "quit":
-            sendall(handler,app.QUIT_COMMAND.encode())
+        if username_input == app.QUIT_COMMAND:
+            sendall(handler, app.QUIT_COMMAND.encode())
             return False
         
-        if not username_input.startswith("User: "):
+        if not username_input.startswith(app.USERNAME_COMMAND):
             print("Invalid Login Format. Remember your username prefix 'User: <username>'.")
+            sendall(handler, app.QUIT_COMMAND.encode())
             return False
         
-        sendall(handler,username_input.encode())
+        sendall(handler, username_input.encode())
         
         password_input = input()
         
-        if password_input == "quit":
-            sendall(handler,app.QUIT_COMMAND.encode())
+        if password_input == app.QUIT_COMMAND:
+            sendall(handler, app.QUIT_COMMAND.encode())
             return False
             
-        if not password_input.startswith("Password: "):
+        if not password_input.startswith(app.PASSWORD_COMMAND):
             print("Invalid Login Format. Remember your password prefix 'Password: <password>'.")
+            sendall(handler, app.QUIT_COMMAND.encode())
             return False
         
-        sendall(handler,password_input.encode())
+        sendall(handler, password_input.encode())
         
         response = recvall(handler).decode()
         username = username_input[len(app.USERNAME_COMMAND):]
