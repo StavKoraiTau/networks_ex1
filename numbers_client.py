@@ -100,52 +100,6 @@ def auth_loop(handler: SocketHandler) -> bool:
         if app.login_success_template(username) == response:
             return True
         
-def authentication(handler : SocketHandler) -> bool:
-    
-    username_input = input()
-    
-    if username_input == "quit":
-        exit(0)
-        
-    if not username_input.startswith("User: "):
-        print("Invalid Login Format. Remember your username prefix 'User: <username>'.")
-        exit(0)
-        
-    password_input = input()
-    
-    if password_input == "quit":
-        exit(0)
-        
-    if not password_input.startswith("Password: "):
-        print("Invalid Login Format. Remember your password prefix 'Password: <password>'.")
-        exit(0)
-        
-    
-    handler.set_write(username_input.encode())
-    try:
-        while handler.writing():
-            handler.write()
-        handler.set_write(password_input.encode())
-        while handler.writing():
-            handler.write()
-    except OSError:
-        print("Error writing to server")
-    try:
-        handler.set_read()
-        while handler.reading():
-            handler.read()
-        response = handler.get_msg().decode()
-        username = username_input[len(app.USERNAME_COMMAND):]
-        
-        print(response) # Welcome message.
-        
-        if app.login_success_template(username) == response:
-            return True
-        else:
-            return False
-        
-    except OSError:
-        print("Error writing to server")
         
 def sendall(handler : SocketHandler, msg : bytes) -> None:
     handler.set_write(msg)
