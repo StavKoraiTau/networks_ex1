@@ -4,6 +4,8 @@ import app
 import socket_handler
 import select
 from app import NextAction
+import csv
+
 def main():
     auth_db = load_db("database.txt")
     with socket.socket(socket.AF_INET,socket.SOCK_STREAM) as listen_sock:
@@ -60,9 +62,9 @@ def next_action(apps : dict, handler : socket_handler.SocketHandler,
         handler.set_read()
     
 def load_db(file_path : str) -> dict[str,str]:
-    with open(file_path, "r") as f:
-        entries = [l[:len(l)-1].split("\t") for l in f.readlines() if l]
-        database = {u:p for u,p in entries}
+    with open(file_path, "r", newline="") as f:
+        csv_reader = csv.reader(f,delimiter="\t")
+        database = {u:p for u,p in csv_reader}
     return database
 
 if __name__ == "__main__":
