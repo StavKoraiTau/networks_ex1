@@ -21,7 +21,7 @@ def main():
     run_app_connection(host, port)
     
 
-def run_app_connection(host : str, port : int) -> None:
+def run_app_connection(host, port):
     with socket.socket(socket.AF_INET,socket.SOCK_STREAM) as sock:
         try:
             sock.connect((host,port))
@@ -44,10 +44,10 @@ def run_app_connection(host : str, port : int) -> None:
             
         
 
-def main_loop(handler : SocketHandler) -> bool:
+def main_loop(handler):
     """main loop in the app on the clientside, gets command from user,
     if an invalid command or quit is passed sends a quit command to server and finishes when on the
-    latter it also prints an error, otherwise command is sent to server and prints response
+    invalid command it also prints an error, otherwise command is sent to server and prints response
 
     Args:
         handler (SocketHandler): _description_
@@ -69,7 +69,7 @@ def main_loop(handler : SocketHandler) -> bool:
         
         print(recvall(handler).decode())
     
-def validate_command(command : str) -> bool:
+def validate_command(command):
     """validates on the clientside wether a command is valid
 
     Args:
@@ -81,7 +81,7 @@ def validate_command(command : str) -> bool:
     pattern = r'(calculate:\s-?\d+\s[\+\-\*/\^]\s-?\d+|^factors:\s-?\d+|^max:\s\(-?\d+(\s-?\d+)*\)|quit)$'
     return bool(re.match(pattern,command))
 
-def auth_loop(handler: SocketHandler) -> bool:
+def auth_loop(handler):
     """loop getting username and password command from user until correct login
     info is entered (with the right format) or wrong format or "quit" is entered
 
@@ -127,12 +127,12 @@ def auth_loop(handler: SocketHandler) -> bool:
             return True
         
         
-def sendall(handler : SocketHandler, msg : bytes) -> None:
+def sendall(handler, msg) -> None:
     handler.set_write(msg)
     while handler.writing():
         handler.write()
         
-def recvall(handler : SocketHandler) -> bytes:
+def recvall(handler):
     handler.set_read()
     while handler.reading():
         handler.read()

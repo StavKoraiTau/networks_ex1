@@ -475,16 +475,16 @@ def new_logged_in_client():
     writeline_stdin(client,"Password: 123")
     readline_stdout(client)
     return client
-def readline_stdout(process : subprocess.Popen) -> str:
+def readline_stdout(process):
     process.stdout.flush()
     line = process.stdout.readline()
     return line[:len(line)-1]
 
-def writeline_stdin(process : subprocess.Popen, line : str) -> None:
+def writeline_stdin(process, line) -> None:
     process.stdin.write(line + "\n")
     process.stdin.flush()
     
-def max_str(nums : list[int]):
+def max_str(nums):
     s = "max: " + str(nums).replace(",","").replace("[","(").replace("]",")")
     return s
 

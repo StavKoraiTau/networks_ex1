@@ -28,17 +28,17 @@ LOGIN_SUCCESS_RESPONSE_TEMPLATE = "Hi {}, good to see you."
 MAX_INT32 = 2**31 - 1
 MIN_INT32 = - 2**31
 
-def login_success_template(username : str) -> str:
+def login_success_template(username):
     return LOGIN_SUCCESS_RESPONSE_TEMPLATE.format(username)
 
 class ServerAppInstance:
-    def __init__(self, auth_dict : dict[str,str]) -> None:
+    def __init__(self, auth_dict):
         self._auth_dict = auth_dict
         self._username = ""
         self._password = ""
         self._state = State.INIT
         
-    def next(self,message : bytes | None = None) -> tuple[NextAction, bytes | None]:
+    def next(self, message):
         if message != None:
             message = message.decode()
         if self._state == State.INIT:
@@ -91,7 +91,7 @@ class ServerAppInstance:
                 return True
         return False
     
-def process_command(message : str) -> tuple[NextAction, bytes | None]:
+def process_command(message):
     if message.startswith(CALCULATE_COMMAND):
         return calculate(message[len(CALCULATE_COMMAND):].split(" "))
     elif message.startswith(MAX_COMMAND):
@@ -103,7 +103,7 @@ def process_command(message : str) -> tuple[NextAction, bytes | None]:
     else:
         return NextAction.SEND, "Invalid command.".encode()
     
-def factors(arg : str):
+def factors(arg):
     try:
         x = int(arg)
     except:
@@ -126,7 +126,7 @@ def factors(arg : str):
         s += str(factor) + ", "
     return NextAction.SEND, s[:len(s)-2].encode()
         
-def get_max(args : str) -> tuple[NextAction, bytes | None]:
+def get_max(args):
     if len(args) < 3 or args[0] != "(" or args[len(args)-1] != ")":
         return NextAction.SEND, "Invalid format for max.".encode() 
     args = args[1:len(args)-1].split(" ")
@@ -140,7 +140,7 @@ def get_max(args : str) -> tuple[NextAction, bytes | None]:
     except:
         return NextAction.SEND, "Invalid value in max.".encode() 
     
-def calculate(args : list[str]) -> tuple[NextAction, bytes | None]:
+def calculate(args):
     if len(args) != 3:
         return NextAction.SEND, "Invalid calculate format.".encode()
     try:
@@ -175,7 +175,7 @@ def calculate(args : list[str]) -> tuple[NextAction, bytes | None]:
     except:
         return NextAction.SEND, "Invalid value in calculate.".encode()
 
-def in_int32_range(val : int) -> bool:
+def in_int32_range(val):
     if val > MAX_INT32 or val < MIN_INT32:
         return False
     return True

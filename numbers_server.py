@@ -29,7 +29,7 @@ def main():
     server_loop(auth_db, port)
 
                 
-def server_loop(auth_db : dict[str,str], port : int) -> None:
+def server_loop(auth_db, port):
     """startup listening, accepting clients and managing the communication between the app
     instances and the sockets
 
@@ -80,8 +80,7 @@ def server_loop(auth_db : dict[str,str], port : int) -> None:
                 if handler.done_with_msg():
                     next_action(apps,handler,app_inst)
                     
-def next_action(apps : dict, handler : socket_handler.SocketHandler,
-            app_inst : app.ServerAppInstance, message : bytes | None = None) -> None:
+def next_action(apps, handler, app_inst, message = None):
     next_act, opt_msg = app_inst.next(message)
     if next_act == NextAction.QUIT:
         apps.pop(handler.get_socket())
@@ -91,7 +90,7 @@ def next_action(apps : dict, handler : socket_handler.SocketHandler,
     elif next_act == NextAction.RECV:
         handler.set_read()
     
-def load_db(file_path : str) -> dict[str,str]:
+def load_db(file_path):
     with open(file_path, "r", newline="") as f:
         csv_reader = csv.reader(f,delimiter="\t")
         database = {u:p for u,p in csv_reader}
