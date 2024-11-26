@@ -8,7 +8,7 @@ import re
 def main():
     host = "localhost"
     port = 1337
-    if len(sys.argv) != 3 and len(sys.argv) != 1:
+    if len(sys.argv) > 3 or len(sys.argv) < 1:
         print("Invalid number of arguments, expected ./numbers_client.py [hostname [port]]")
         return
     if len(sys.argv) >= 2:
