@@ -78,7 +78,7 @@ def validate_command(command : str) -> bool:
     Returns:
         bool: True if a valid command during the main app loop
     """
-    pattern = r'(calculate:\s-?\d+\s[+\-*/^]\s-?\d+|^factors:\s-?\d+|^max:\s\(-?\d+(\s-?\d+)*\)|quit)$'
+    pattern = r'(calculate:\s-?\d+\s[\+\-\*/\^]\s-?\d+|^factors:\s-?\d+|^max:\s\(-?\d+(\s-?\d+)*\)|quit)$'
     return bool(re.match(pattern,command))
 
 def auth_loop(handler: SocketHandler) -> bool:
@@ -121,7 +121,7 @@ def auth_loop(handler: SocketHandler) -> bool:
         response = recvall(handler).decode()
         username = username_input[len(app.USERNAME_COMMAND):]
         
-        print(response) # Welcom / Login failed message
+        print(response) # Welcome / Login failed message
         
         if app.login_success_template(username) == response:
             return True

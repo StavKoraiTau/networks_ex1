@@ -25,6 +25,9 @@ QUIT_COMMAND = "quit"
 FAILED_LOGIN_RESPONSE = "Failed to login."
 LOGIN_SUCCESS_RESPONSE_TEMPLATE = "Hi {}, good to see you."
 
+MAX_INT32 = 2**31 - 1
+MIN_INT32 = - 2**31
+
 def login_success_template(username : str) -> str:
     return LOGIN_SUCCESS_RESPONSE_TEMPLATE.format(username)
 
@@ -92,7 +95,6 @@ def process_command(message : str) -> tuple[NextAction, bytes | None]:
     if message.startswith(CALCULATE_COMMAND):
         return calculate(message[len(CALCULATE_COMMAND):].split(" "))
     elif message.startswith(MAX_COMMAND):
-        #return get_max(message[len(MAX_COMMAND)+1:len(message)-1].split(" "))
         return get_max(message[len(MAX_COMMAND):])
     elif message.startswith(FACTORS_COMMAND):
         return factors(message[len(FACTORS_COMMAND):])
@@ -108,6 +110,8 @@ def factors(arg : str):
         return NextAction.SEND, "Invalid format for factor.".encode()
     if x < 2:
         return NextAction.SEND, "Invalid number for factor.".encode()
+    if not in_int32_range(x):
+        return NextAction.SEND, "Out of range value for factor.".encode()
     x_factors = set()
     y = 2
     while x > 1:
@@ -119,25 +123,32 @@ def factors(arg : str):
         y += 1
     s = f"the prime factors of {arg} are: "
     for factor in sorted(x_factors):
-        s += str(factor) + ","
-    return NextAction.SEND, s[:len(s)-1].encode()
+        s += str(factor) + ", "
+    return NextAction.SEND, s[:len(s)-2].encode()
         
 def get_max(args : str) -> tuple[NextAction, bytes | None]:
     if len(args) < 3 or args[0] != "(" or args[len(args)-1] != ")":
         return NextAction.SEND, "Invalid format for max.".encode() 
     args = args[1:len(args)-1].split(" ")
     try:
-        return NextAction.SEND, f"the maximum is {max([int(s) for s in args])}.".encode()
+        int_args = [int(s) for s in args]
+        max_arg = max(int_args)
+        min_args = min(int_args)
+        if not in_int32_range(max_arg) or not in_int32_range(min_args):
+            return NextAction.SEND, "error: result is too big.".encode() 
+        return NextAction.SEND, f"the maximum is {max_arg}".encode()
     except:
         return NextAction.SEND, "Invalid value in max.".encode() 
     
 def calculate(args : list[str]) -> tuple[NextAction, bytes | None]:
     if len(args) != 3:
-        return NextAction.SEND, "Invalid number of args in calculate.".encode()
+        return NextAction.SEND, "Invalid calculate format.".encode()
     try:
         x = int(args[0])
         op = args[1]
         y = int(args[2])
+        if not in_int32_range(x) or not in_int32_range(y):
+            return NextAction.SEND, "Out of range calculate values.".encode()
         if op == "+":
             z = x + y
         elif op == "-":
@@ -145,20 +156,26 @@ def calculate(args : list[str]) -> tuple[NextAction, bytes | None]:
         elif op == "*":
             z = x * y
         elif op == "^":
+            if y < 0:
+                return NextAction.SEND, "Out of range calculate values.".encode()
             z = x ** y
         elif op == "/":
             try:
                 z = x / y
             except ZeroDivisionError:
                 return NextAction.SEND, f"error: division by zero.".encode()
-            if z > 2**31 - 1 or z < -2**31:
+            if not in_int32_range(z):
                 return NextAction.SEND, f"error: result is too big.".encode()
             return NextAction.SEND, f"response: {z:.2f}.".encode()
         else:
-            return NextAction.SEND, "Invalid calculate command.".encode()
-        if z > 2**31 - 1 or z < -2**31:
+            return NextAction.SEND, "Invalid calculate format.".encode()
+        if not in_int32_range(z):
             return NextAction.SEND, f"error: result is too big.".encode()
         return NextAction.SEND, f"response: {z}.".encode()
     except:
         return NextAction.SEND, "Invalid value in calculate.".encode()
-    
+
+def in_int32_range(val : int) -> bool:
+    if val > MAX_INT32 or val < MIN_INT32:
+        return False
+    return True
