@@ -3,7 +3,12 @@
 import socket
 from enum import Enum
 import protocol
-
+"""
+Implements a class to handle the reading and writing of messages given in 
+bytes using the protocol (headers). Used to incremently reading or writing the messages
+useful when multiplexing different clients.
+"""
+    
 class HandlerMode(Enum):
     HEADER_READ = 0
     READ = 1

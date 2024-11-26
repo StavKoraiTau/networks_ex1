@@ -31,7 +31,8 @@ def main():
                 
 def server_loop(auth_db, port):
     """startup listening, accepting clients and managing the communication between the app
-    instances and the sockets
+    instances and the sockets. Will multiplex between clients with none blocking
+    reads and writes using select.
 
     Args:
         auth_db (dict[str,str]): a dictionary of usernames:passwords
@@ -81,6 +82,14 @@ def server_loop(auth_db, port):
                     next_action(apps,handler,app_inst)
                     
 def next_action(apps, handler, app_inst, message = None):
+    """ switch app to its next state after finishing dealing with sending/recieving a message
+
+    Args:
+        apps (dict[socket,tuple[SocketHandler,ServerAppInstance]]): the dictionary of the current app instances so we can remove on disconnect
+        handler (SocketHandler): handler of the socket whose done with message
+        app_inst (ServerAppInstance): the app associated with the done message
+        message (bytes, optional): if next action is send, this will be the message to be sent. Defaults to None.
+    """
     next_act, opt_msg = app_inst.next(message)
     if next_act == NextAction.QUIT:
         apps.pop(handler.get_socket())

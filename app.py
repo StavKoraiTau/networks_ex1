@@ -24,6 +24,17 @@ QUIT_COMMAND = "quit"
 
 FAILED_LOGIN_RESPONSE = "Failed to login."
 LOGIN_SUCCESS_RESPONSE_TEMPLATE = "Hi {}, good to see you."
+WELCOME_MESSAGE = "Welcome! Please log in."
+
+OUT_OF_RANGE_INPUT = "error: input not in range"
+INVALID_INPUT_VALUE = "error: invalid value in input"
+TOO_BIG_RESULT = "error: result is too big"
+INVALID_COMMAND = "error: invalid command"
+INVALID_COMMAND_FORMAT = "error: invalid format for command"
+
+CALCULATE_RESPONSE_INT = "response: {}."
+CALCULATE_RESPONSE_FLOAT = "response: {:.2f}."
+MAX_RESPONSE = "the maximum is {}"
 
 MAX_INT32 = 2**31 - 1
 MIN_INT32 = - 2**31
@@ -43,7 +54,7 @@ class ServerAppInstance:
             message = message.decode()
         if self._state == State.INIT:
             self._state = State.W_WELCOME
-            return NextAction.SEND, b"Welcome. Please sign in."
+            return NextAction.SEND, WELCOME_MESSAGE.encode()
         
         elif self._state == State.W_WELCOME:
             self._state = State.R_USERNAME
@@ -62,10 +73,10 @@ class ServerAppInstance:
             self._password = message[len(PASSWORD_COMMAND):]
             if self.authenticate():
                 self._state = State.W_HI_LOGIN
-                return NextAction.SEND, f"Hi {self._username}, good to see you.".encode()
+                return NextAction.SEND, login_success_template(self._username).encode()
             else:
                 self._state = State.W_FAILED_LOGIN
-                return NextAction.SEND, "Failed to login.".encode()
+                return NextAction.SEND, FAILED_LOGIN_RESPONSE.encode()
             
         elif self._state == State.W_HI_LOGIN:
             self._state = State.R_COMMAND
@@ -101,17 +112,17 @@ def process_command(message):
     elif message == QUIT_COMMAND:
         return NextAction.QUIT, None
     else:
-        return NextAction.SEND, "Invalid command.".encode()
+        return NextAction.SEND, INVALID_COMMAND.encode()
     
 def factors(arg):
     try:
         x = int(arg)
     except:
-        return NextAction.SEND, "Invalid format for factor.".encode()
+        return NextAction.SEND, INVALID_COMMAND_FORMAT.encode()
     if x < 2:
-        return NextAction.SEND, "Invalid number for factor.".encode()
+        return NextAction.SEND, INVALID_INPUT_VALUE.encode()
     if not in_int32_range(x):
-        return NextAction.SEND, "Out of range value for factor.".encode()
+        return NextAction.SEND, OUT_OF_RANGE_INPUT.encode()
     x_factors = set()
     y = 2
     while x > 1:
@@ -121,34 +132,37 @@ def factors(arg):
             y = 2
             continue
         y += 1
-    s = f"the prime factors of {arg} are: "
-    for factor in sorted(x_factors):
+    return NextAction.SEND, factors_output(arg, x_factors).encode()
+
+def factors_output(x, x_factor_set):
+    s = f"the prime factors of {x} are: "
+    for factor in sorted(x_factor_set):
         s += str(factor) + ", "
-    return NextAction.SEND, s[:len(s)-2].encode()
-        
+    return s[:len(s)-2]
+    
 def get_max(args):
     if len(args) < 3 or args[0] != "(" or args[len(args)-1] != ")":
-        return NextAction.SEND, "Invalid format for max.".encode() 
+        return NextAction.SEND, INVALID_COMMAND_FORMAT.encode() 
     args = args[1:len(args)-1].split(" ")
     try:
         int_args = [int(s) for s in args]
         max_arg = max(int_args)
         min_args = min(int_args)
         if not in_int32_range(max_arg) or not in_int32_range(min_args):
-            return NextAction.SEND, "error: result is too big.".encode() 
-        return NextAction.SEND, f"the maximum is {max_arg}".encode()
+            return NextAction.SEND, OUT_OF_RANGE_INPUT.encode() 
+        return NextAction.SEND, MAX_RESPONSE.format(max_arg).encode()
     except:
-        return NextAction.SEND, "Invalid value in max.".encode() 
+        return NextAction.SEND, INVALID_INPUT_VALUE.encode() 
     
 def calculate(args):
     if len(args) != 3:
-        return NextAction.SEND, "Invalid calculate format.".encode()
+        return NextAction.SEND, INVALID_COMMAND_FORMAT.encode()
     try:
         x = int(args[0])
         op = args[1]
         y = int(args[2])
         if not in_int32_range(x) or not in_int32_range(y):
-            return NextAction.SEND, "Out of range calculate values.".encode()
+            return NextAction.SEND, OUT_OF_RANGE_INPUT.encode()
         if op == "+":
             z = x + y
         elif op == "-":
@@ -157,23 +171,23 @@ def calculate(args):
             z = x * y
         elif op == "^":
             if y < 0:
-                return NextAction.SEND, "Out of range calculate values.".encode()
+                return NextAction.SEND, INVALID_INPUT_VALUE.encode()
             z = x ** y
         elif op == "/":
             try:
                 z = x / y
             except ZeroDivisionError:
-                return NextAction.SEND, f"error: division by zero.".encode()
+                return NextAction.SEND, INVALID_INPUT_VALUE.encode()
             if not in_int32_range(z):
-                return NextAction.SEND, f"error: result is too big.".encode()
-            return NextAction.SEND, f"response: {z:.2f}.".encode()
+                return NextAction.SEND, TOO_BIG_RESULT.encode()
+            return NextAction.SEND, CALCULATE_RESPONSE_FLOAT.format(z).encode()
         else:
-            return NextAction.SEND, "Invalid calculate format.".encode()
+            return NextAction.SEND, INVALID_COMMAND_FORMAT.encode()
         if not in_int32_range(z):
-            return NextAction.SEND, f"error: result is too big.".encode()
-        return NextAction.SEND, f"response: {z}.".encode()
+            return NextAction.SEND, TOO_BIG_RESULT.encode()
+        return NextAction.SEND, CALCULATE_RESPONSE_INT.format(z).encode()
     except:
-        return NextAction.SEND, "Invalid value in calculate.".encode()
+        return NextAction.SEND, INVALID_INPUT_VALUE.encode()
 
 def in_int32_range(val):
     if val > MAX_INT32 or val < MIN_INT32:

@@ -1,22 +1,20 @@
 import subprocess
 import time
-WELCOME = "Welcome. Please sign in."
+
+# server side
+WELCOME = "Welcome! Please log in."
 HI_MSG = "Hi {}, good to see you."
 INVALID_LOGIN_PREFIX = "Invalid Login Format."
 LOGIN_FAIL = "Failed to login."
 CALC_RESPONSE = "response: {}."
-TOO_BIG_RESULT = "error: result is too big."
+TOO_BIG_ERROR = "error: result is too big"
 MAX_RESPONSE = "the maximum is {}"
 FACTORS_RESPONSE = "the prime factors of {} are: {}"
-INVALID_COMMAND = "Invalid command."
-INVALID_COMMAND_FORMAT = "Invalid command format"
-INVALID_FORMAT_FACTOR = "Invalid format for factor."
-INVALID_VALUE_FACTOR = "Invalid number for factor."
-INVALID_FORMAT_MAX = "Invalid format for max."
-INVALID_VALUE_MAX = "Invalid value in max."
-INVALID_FORMAT_CALCULATE = "Invalid calculate format."
-INVALID_VALUE_CALCULATE = "Invalid value in calculate."
+OUT_OF_RANGE_ERROR = "error: input not in range"
+VALUE_ERROR = "error: invalid value in input"
 
+# client side
+INVALID_COMMAND_FORMAT = "Invalid command format" 
 
 
 def main():
@@ -67,7 +65,7 @@ def basic_functionality():
         print("4 calc response error")
         return
     writeline_stdin(client, "calculate: 2 ^ 32")
-    if readline_stdout(client) != TOO_BIG_RESULT:
+    if readline_stdout(client) != TOO_BIG_ERROR:
         print("5 calc response error")
         return
     writeline_stdin(client, "calculate: 2 / 2")
@@ -215,11 +213,11 @@ def calculate_test():
         print("1 error calculate")
         return
     writeline_stdin(client,"calculate: {} + {}".format(2**31 - 1,1))
-    if readline_stdout(client) != TOO_BIG_RESULT:
+    if readline_stdout(client) != TOO_BIG_ERROR:
         print("2 too big test")
         return
     writeline_stdin(client,"calculate: {} + {}".format(-2**30 - 1,-2**30))
-    if readline_stdout(client) != TOO_BIG_RESULT:
+    if readline_stdout(client) != TOO_BIG_ERROR:
         print("3 too big test")
         return
     writeline_stdin(client,"calculate: {} + {}".format("test",-2**30))
@@ -229,11 +227,11 @@ def calculate_test():
     client.wait()
     client = new_logged_in_client()
     writeline_stdin(client,"calculate: {} + {}".format(1,-2**32))
-    if not readline_stdout(client).startswith("Out of range"):
+    if readline_stdout(client) != OUT_OF_RANGE_ERROR:
         print("5 Out of range test")
         return
     writeline_stdin(client,"calculate: {} - {}".format(2**30,-2**30))
-    if readline_stdout(client) != TOO_BIG_RESULT:
+    if readline_stdout(client) != TOO_BIG_ERROR:
         print("6 too big test")
         return
     writeline_stdin(client,"calculate: {} - {}".format(10,-10))
@@ -251,7 +249,7 @@ def calculate_test():
         print("9 error, response test")
         return
     writeline_stdin(client,"calculate: {} * {}".format(4,-2**30))
-    if readline_stdout(client) != TOO_BIG_RESULT:
+    if readline_stdout(client) != TOO_BIG_ERROR:
         print("10 error, response test")
         return
     writeline_stdin(client,"calculate: {} * {}".format("t112",-2**30))
@@ -266,7 +264,7 @@ def calculate_test():
         return
     writeline_stdin(client,"calculate: {} / {}".format(-2**31,-1))
     response = readline_stdout(client)
-    if response != TOO_BIG_RESULT:
+    if response != TOO_BIG_ERROR:
         print("13 error, too big test")
         print(response)
         return
@@ -281,7 +279,7 @@ def calculate_test():
     client.wait()
     client = new_logged_in_client()
     writeline_stdin(client,"calculate: {} ^ {}".format(2,31))
-    if readline_stdout(client) != TOO_BIG_RESULT:
+    if readline_stdout(client) != TOO_BIG_ERROR:
         print("16 error, too big test")
         return
     writeline_stdin(client,"calculate: {} ^ {}".format(1,6))
@@ -338,15 +336,16 @@ def factor_test():
         print("3 error, response test")
         return
     writeline_stdin(client,"factors: {}".format(1))
-    if readline_stdout(client) != INVALID_VALUE_FACTOR:
+    if readline_stdout(client) != VALUE_ERROR:
         print("4 error, invalid value test")
         return
     writeline_stdin(client,"factors: {}".format(-2))
-    if readline_stdout(client) != INVALID_VALUE_FACTOR:
+    if readline_stdout(client) != VALUE_ERROR:
         print("5 error, invalid value test")
         return
     writeline_stdin(client,"factors: {}".format(2**31))
-    if not readline_stdout(client).startswith("Out of range"):
+    response = readline_stdout(client)
+    if  response != OUT_OF_RANGE_ERROR:
         print("6 error, out of range test")
         return
     writeline_stdin(client,"factors: {}".format("t2"))
@@ -416,6 +415,13 @@ def max_test():
     if readline_stdout(client) != INVALID_COMMAND_FORMAT:
         print("10 error, format test")
         return
+    client.wait()
+    client = new_logged_in_client()
+    writeline_stdin(client,f"max: (1 {-2**31 - 1})")
+    if readline_stdout(client) != OUT_OF_RANGE_ERROR:
+        print("11 error, format test")
+        return
+    writeline_stdin(client, "quit")
     client.wait()
     print("passed max test")
 def login_test():

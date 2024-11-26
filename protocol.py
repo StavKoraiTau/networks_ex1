@@ -1,8 +1,10 @@
 import struct
+"""
+Helper functions to implement the protocol, adding the header length or getting the data
+"""
 BYTE_ORDER = "!"
 HEADER_FORMAT = BYTE_ORDER + "I"
 HEADER_LEN = struct.calcsize(HEADER_FORMAT)
-
 def encode_header(msg_length):
     return struct.pack(HEADER_FORMAT, msg_length)
 
