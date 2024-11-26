@@ -298,25 +298,25 @@ def calculate_test():
         return
     client.wait()
     client = new_logged_in_client()
-    writeline_stdin(client,"calculate: {} ^ {} ".format(-20,2.3))
+    writeline_stdin(client,"calculate: {} ^ {} ".format(-20,2))
     if readline_stdout(client) != INVALID_COMMAND_FORMAT:
         print("20 error, format test")
         return
     client.wait()
     client = new_logged_in_client()
-    writeline_stdin(client,"calculate: {} ^ {} + 2".format(-20,2.3))
+    writeline_stdin(client,"calculate: {} ^ {} + 2".format(-20,2))
     if readline_stdout(client) != INVALID_COMMAND_FORMAT:
         print("21 error, format test")
         return
     client.wait()
     client = new_logged_in_client()
-    writeline_stdin(client,"calculate: {} {}".format(-20,2.3))
+    writeline_stdin(client,"calculate: {} {}".format(-20,2))
     if readline_stdout(client) != INVALID_COMMAND_FORMAT:
         print("22 error, format test")
         return
     client.wait()
     client = new_logged_in_client()
-    writeline_stdin(client,"calculate:  {} + {}".format(-20,2.3))
+    writeline_stdin(client,"calculate:  {} + {}".format(-20,2))
     if readline_stdout(client) != INVALID_COMMAND_FORMAT:
         print("23 error, format test")
         return
